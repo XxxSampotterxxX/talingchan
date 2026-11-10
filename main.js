@@ -18,6 +18,18 @@ function createWindow() {
     if (url.startsWith('https://claude.ai') || url.startsWith('https://accounts.google.com')) return { action: 'allow' };
     shell.openExternal(url); return { action: 'deny' };
   });
+  // หลังล็อกอินเสร็จ claude.ai มักพาไปหน้าแรก -> พากลับหน้าเกมอัตโนมัติ
+  let lastGo = 0;
+  const backToGame = (u) => {
+    try {
+      const x = new URL(u);
+      if (x.hostname === 'claude.ai' && ['/', '/new', '/recents', '/chats'].includes(x.pathname.replace(/\/$/, '') || '/') && Date.now() - lastGo > 4000) {
+        lastGo = Date.now(); win.loadURL(GAME_URL);
+      }
+    } catch (e) {}
+  };
+  win.webContents.on('did-navigate', (e, u) => backToGame(u));
+  win.webContents.on('did-navigate-in-page', (e, u) => backToGame(u));
   win.webContents.on('did-fail-load', () => {
     win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(
       '<body style="background:#050b1a;color:#9fe;font:20px sans-serif;text-align:center;padding-top:20vh">' +
@@ -25,6 +37,7 @@ function createWindow() {
   });
   win.webContents.on('before-input-event', (e, i) => {
     if (i.key === 'F11' && i.type === 'keyDown') win.setFullScreen(!win.isFullScreen());
+    if (i.key === 'F6' && i.type === 'keyDown') win.loadURL(GAME_URL);
     if (i.key === 'F5' && i.type === 'keyDown') win.webContents.reload();
   });
 }
