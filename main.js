@@ -1,8 +1,22 @@
 // Battle of Talingchan desktop (v2): เกมอยู่ในแอป ไม่ต้องล็อกอิน / ออนไลน์เครื่องต่อเครื่อง
-const { app, BrowserWindow, dialog, shell, Menu } = require('electron');
+const { app, BrowserWindow, dialog, shell, Menu, protocol, net } = require('electron');
+const { pathToFileURL } = require('url');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 let win;
+// ให้เกมโหลดไฟล์ภาพการ์ด (packs/*.webp) ผ่าน fetch ได้ (file:// ทำไม่ได้)
+protocol.registerSchemesAsPrivileged([{ scheme: 'tlapp', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } }]);
+function registerGameProtocol() {
+  const root = path.join(__dirname, 'game');
+  protocol.handle('tlapp', (req) => {
+    const u = new URL(req.url);
+    let p = decodeURIComponent(u.pathname);
+    if (p === '/' || p === '') p = '/index.html';
+    const f = path.normalize(path.join(root, p));
+    if (!f.startsWith(root)) return new Response('forbidden', { status: 403 });
+    return net.fetch(pathToFileURL(f).toString());
+  });
+}
 
 function createWindow() {
   win = new BrowserWindow({
@@ -11,7 +25,7 @@ function createWindow() {
     webPreferences: { contextIsolation: true, sandbox: true }
   });
   Menu.setApplicationMenu(null);
-  win.loadFile(path.join(__dirname, 'game', 'index.html'));
+  win.loadURL('tlapp://game/index.html');
   win.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url)) shell.openExternal(url); return { action: 'deny' }; });
   win.webContents.on('will-navigate', (e, url) => { if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); } });
   win.webContents.on('before-input-event', (e, i) => {
@@ -37,5 +51,5 @@ function setupUpdater() {
   autoUpdater.checkForUpdates().catch(() => {});
 }
 
-app.whenReady().then(() => { createWindow(); if (app.isPackaged) setupUpdater(); });
+app.whenReady().then(() => { registerGameProtocol(); createWindow(); if (app.isPackaged) setupUpdater(); });
 app.on('window-all-closed', () => app.quit());
