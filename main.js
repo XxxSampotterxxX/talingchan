@@ -30,7 +30,8 @@ function createWindow() {
   };
   win.webContents.on('did-navigate', (e, u) => backToGame(u));
   win.webContents.on('did-navigate-in-page', (e, u) => backToGame(u));
-  win.webContents.on('did-fail-load', () => {
+  win.webContents.on('did-fail-load', (e, code, desc, url, isMainFrame) => {
+    if (!isMainFrame || code === -3 || (url || '').startsWith('data:')) return; // -3 = ถูกยกเลิก/เปลี่ยนหน้า ไม่ใช่เน็ตหลุด
     win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(
       '<body style="background:#050b1a;color:#9fe;font:20px sans-serif;text-align:center;padding-top:20vh">' +
       'เชื่อมต่ออินเทอร์เน็ตไม่ได้<br><br><button onclick="location.href=\'' + GAME_URL + '\'" style="font-size:18px;padding:8px 20px">ลองใหม่</button></body>'));
