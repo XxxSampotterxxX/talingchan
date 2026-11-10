@@ -1,0 +1,22 @@
+name: Fetch card art cache
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/fetch-art.yml']
+permissions:
+  contents: write
+jobs:
+  art:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: node scripts/fetch-art.js
+      - name: Publish art zip (pre-release, ไม่กระทบระบบอัพเดท)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd game && zip -qr ../art-cards.zip cards && cd ..
+          gh release delete art-cache --yes --cleanup-tag 2>/dev/null || true
+          gh release create art-cache art-cards.zip --prerelease --title "art-cache" --notes "รูปการ์ดสำหรับเกมหน้าเว็บ (ไม่ใช่ตัวติดตั้ง)"
