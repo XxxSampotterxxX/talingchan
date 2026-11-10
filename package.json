@@ -1,0 +1,19 @@
+{
+  "name": "talingchan",
+  "productName": "Battle of Talingchan",
+  "version": "1.0.0",
+  "description": "ศึกตลิ่งชัน",
+  "main": "main.js",
+  "author": "k7mai",
+  "license": "UNLICENSED",
+  "scripts": { "start": "electron .", "dist": "electron-builder --win --publish never" },
+  "dependencies": { "electron-updater": "^6.3.9" },
+  "devDependencies": { "electron": "^33.2.0", "electron-builder": "^25.1.8" },
+  "build": {
+    "appId": "com.talingchan.game",
+    "productName": "Battle of Talingchan",
+    "win": { "target": "nsis" },
+    "nsis": { "oneClick": true, "perMachine": false, "createDesktopShortcut": true, "createStartMenuShortcut": true },
+    "publish": [{ "provider": "github", "owner": "XxxSampotterxxX", "repo": "talingchan" }]
+  }
+}
