@@ -42,6 +42,7 @@
       "main.js",
       "game/**",
       "package.json"
-    ]
+    ],
+    "artifactName": "Battle-of-Talingchan-Setup-${version}.${ext}"
   }
 }
