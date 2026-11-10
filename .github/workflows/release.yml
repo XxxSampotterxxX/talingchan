@@ -2,7 +2,7 @@ name: Build Windows installer
 on:
   push:
     branches: [main]
-    paths: ['package.json', 'main.js', '.github/workflows/release.yml']
+    paths: ["package.json", "main.js", "game/**", ".github/workflows/release.yml"]
   workflow_dispatch:
 permissions:
   contents: write

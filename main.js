@@ -1,45 +1,23 @@
-// Battle of Talingchan desktop shell
-// เปิดหน้า Artifact ของเกม (ออนไลน์ใช้ห้องของ Artifact) + ระบบอัพเดทตัวแอปผ่าน GitHub Releases
+// Battle of Talingchan desktop (v2): เกมอยู่ในแอป ไม่ต้องล็อกอิน / ออนไลน์เครื่องต่อเครื่อง
 const { app, BrowserWindow, dialog, shell, Menu } = require('electron');
 const { autoUpdater } = require('electron-updater');
-
-const GAME_URL = 'https://claude.ai/artifact/HXLGUyMzRccDRD6kgM4Uh4';
+const path = require('path');
 let win;
 
 function createWindow() {
   win = new BrowserWindow({
     width: 1440, height: 900, minWidth: 1000, minHeight: 650,
     backgroundColor: '#050b1a', title: 'Battle of Talingchan', autoHideMenuBar: true,
-    webPreferences: { partition: 'persist:talingchan', contextIsolation: true, sandbox: true }
+    webPreferences: { contextIsolation: true, sandbox: true }
   });
   Menu.setApplicationMenu(null);
-  win.loadURL(GAME_URL);
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https://claude.ai') || url.startsWith('https://accounts.google.com')) return { action: 'allow' };
-    shell.openExternal(url); return { action: 'deny' };
-  });
-  // หลังล็อกอินเสร็จ claude.ai มักพาไปหน้าแรก -> พากลับหน้าเกมอัตโนมัติ
-  let lastGo = 0;
-  const backToGame = (u) => {
-    try {
-      const x = new URL(u);
-      if (x.hostname === 'claude.ai' && ['/', '/new', '/recents', '/chats'].includes(x.pathname.replace(/\/$/, '') || '/') && Date.now() - lastGo > 4000) {
-        lastGo = Date.now(); win.loadURL(GAME_URL);
-      }
-    } catch (e) {}
-  };
-  win.webContents.on('did-navigate', (e, u) => backToGame(u));
-  win.webContents.on('did-navigate-in-page', (e, u) => backToGame(u));
-  win.webContents.on('did-fail-load', (e, code, desc, url, isMainFrame) => {
-    if (!isMainFrame || code === -3 || (url || '').startsWith('data:')) return; // -3 = ถูกยกเลิก/เปลี่ยนหน้า ไม่ใช่เน็ตหลุด
-    win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(
-      '<body style="background:#050b1a;color:#9fe;font:20px sans-serif;text-align:center;padding-top:20vh">' +
-      'เชื่อมต่ออินเทอร์เน็ตไม่ได้<br><br><button onclick="location.href=\'' + GAME_URL + '\'" style="font-size:18px;padding:8px 20px">ลองใหม่</button></body>'));
-  });
+  win.loadFile(path.join(__dirname, 'game', 'index.html'));
+  win.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url)) shell.openExternal(url); return { action: 'deny' }; });
+  win.webContents.on('will-navigate', (e, url) => { if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); } });
   win.webContents.on('before-input-event', (e, i) => {
-    if (i.key === 'F11' && i.type === 'keyDown') win.setFullScreen(!win.isFullScreen());
-    if (i.key === 'F6' && i.type === 'keyDown') win.loadURL(GAME_URL);
-    if (i.key === 'F5' && i.type === 'keyDown') win.webContents.reload();
+    if (i.type !== 'keyDown') return;
+    if (i.key === 'F11') win.setFullScreen(!win.isFullScreen());
+    if (i.key === 'F5') win.webContents.reload();
   });
 }
 
