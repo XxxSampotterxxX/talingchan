@@ -1,0 +1,19 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.kokruk.tv'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.kokruk.tv'
+        minSdk 23
+        targetSdk 34
+        versionCode Integer.parseInt((project.findProperty('vc') ?: '1').toString())
+        versionName((project.findProperty('vn') ?: '1.0.0').toString())
+    }
+    signingConfigs {
+        release { storeFile file('../tv.jks'); storePassword 'kokruktv'; keyAlias 'tv'; keyPassword 'kokruktv' }
+    }
+    buildTypes { release { minifyEnabled false; signingConfig signingConfigs.release } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    androidResources { noCompress += ['webp', 'png'] }
+}
+dependencies { implementation 'androidx.webkit:webkit:1.11.0' }

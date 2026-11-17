@@ -1,0 +1,45 @@
+name: Build Android TV app
+on:
+  push:
+    branches: [main]
+    paths: ["android/**", ".github/workflows/android.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  tv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: "8.9" }
+      - name: Prepare game assets
+        run: |
+          npm pack peerjs@1.5.4 --pack-destination /tmp >/dev/null
+          tar -xzf /tmp/peerjs-1.5.4.tgz -C /tmp
+          node scripts/fetch-art.js
+          A=android/app/src/main/assets/game
+          mkdir -p $A
+          cp -r game/packs $A/
+          if [ -d game/cards ]; then cp -r game/cards $A/; fi
+          cp game/p2p.js $A/
+          cp /tmp/package/dist/peerjs.min.js $A/
+          cp android/web/index.html $A/index.html
+          sed -i 's#<meta name="viewport" content="[^"]*">#<meta name="viewport" content="width=1280,user-scalable=no">#' $A/index.html
+          grep -o '<meta name="viewport"[^>]*>' $A/index.html
+          du -sh $A
+      - name: Build APK
+        working-directory: android
+        run: gradle assembleRelease --no-daemon -Pvc=${{ github.run_number }} -Pvn=$(cat version.txt)
+      - name: Publish (pre-release "tv" – ไม่กระทบระบบอัพเดทของ Windows)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk BOK-TV.apk
+          ls -la BOK-TV.apk
+          gh release delete tv --yes --cleanup-tag 2>/dev/null || true
+          gh release create tv BOK-TV.apk --prerelease --title "Android TV $(cat android/version.txt)" --notes-file android/NOTES.md
