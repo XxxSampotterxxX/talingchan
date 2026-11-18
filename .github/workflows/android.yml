@@ -30,6 +30,8 @@ jobs:
           cp /tmp/package/dist/peerjs.min.js $A/
           cp android/web/index.html $A/index.html
           sed -i 's#<meta name="viewport" content="[^"]*">#<meta name="viewport" content="width=1280,user-scalable=no">#' $A/index.html
+          sed -i 's#<head>#<head><script>window.BOK_TV=1</script>#' $A/index.html
+          node scripts/fetch-fonts.js $A/index.html $A/fonts
           grep -o '<meta name="viewport"[^>]*>' $A/index.html
           du -sh $A
       - name: Build APK
