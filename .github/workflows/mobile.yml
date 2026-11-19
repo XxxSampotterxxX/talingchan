@@ -1,0 +1,58 @@
+name: Build Android mobile app
+on:
+  push:
+    branches: [main]
+    paths: ["mobile/**", ".github/workflows/mobile.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: "8.9" }
+      - name: Prepare game assets
+        run: |
+          npm pack peerjs@1.5.4 --pack-destination /tmp >/dev/null
+          tar -xzf /tmp/peerjs-1.5.4.tgz -C /tmp
+          node scripts/fetch-art.js
+          A=mobile/app/src/main/assets/game
+          mkdir -p $A
+          cp -r game/packs $A/
+          if [ -d game/cards ]; then cp -r game/cards $A/; fi
+          cp game/p2p.js $A/
+          cp /tmp/package/dist/peerjs.min.js $A/
+          cp mobile/web/index.html $A/index.html
+          node scripts/fetch-fonts.js $A/index.html $A/fonts
+          echo ${{ github.run_number }} > $A/ver.txt
+          (cd $A && zip -qr "$GITHUB_WORKSPACE/game.zip" index.html p2p.js peerjs.min.js ver.txt fonts)
+          ls -la game.zip; du -sh $A
+      - name: Build APK
+        working-directory: mobile
+        run: gradle assembleRelease --no-daemon -Pvc=$(cat apk.txt) -Pvn=$(cat version.txt)
+      - name: Publish (pre-release "mobile" – ไม่กระทบระบบอัพเดทของ Windows)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp mobile/app/build/outputs/apk/release/app-release.apk BOK-Mobile.apk
+          B=https://github.com/${{ github.repository }}/releases/download/mobile
+          GAME=${{ github.run_number }} NAME="$(cat mobile/game.txt)" APK=$(cat mobile/apk.txt) APKN="$(cat mobile/version.txt)" B=$B node -e '
+            const fs=require("fs");const e=process.env;
+            const notes=fs.readFileSync("mobile/changes.txt","utf8").trim();
+            fs.writeFileSync("ota.json",JSON.stringify({game:+e.GAME,name:e.NAME,apk:+e.APK,apkName:e.APKN,notes,
+              gameUrl:e.B+"/game.zip",gameSize:fs.statSync("game.zip").size,apkUrl:e.B+"/BOK-Mobile.apk",apkSize:fs.statSync("BOK-Mobile.apk").size},null,1))'
+          cat ota.json
+          T="Android มือถือ – แอป $(cat mobile/version.txt) · เกม $(cat mobile/game.txt)"
+          if gh release view mobile >/dev/null 2>&1; then
+            gh release upload mobile BOK-Mobile.apk game.zip --clobber
+            gh release upload mobile ota.json --clobber
+            gh release edit mobile --title "$T" --notes-file mobile/NOTES.md
+          else
+            gh release create mobile BOK-Mobile.apk game.zip ota.json --prerelease --title "$T" --notes-file mobile/NOTES.md
+          fi

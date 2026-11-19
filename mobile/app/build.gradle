@@ -1,0 +1,22 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.kokruk.game'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.kokruk.game'
+        minSdk 23
+        targetSdk 34
+        versionCode Integer.parseInt((project.findProperty('vc') ?: '1').toString())
+        versionName((project.findProperty('vn') ?: '1.0.0').toString())
+    }
+    signingConfigs {
+        release { storeFile file('../mobile.jks'); storePassword 'kokrukmb'; keyAlias 'mobile'; keyPassword 'kokrukmb' }
+    }
+    buildTypes { release { minifyEnabled false; signingConfig signingConfigs.release } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    androidResources { noCompress += ['webp', 'png'] }
+}
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+    implementation 'androidx.core:core:1.13.1'
+}
