@@ -1789,6 +1789,21 @@ html body.hg.thA dialog.askdlg button.ab-no,html body.hg.thA dialog.askdlg butto
  background:linear-gradient(180deg,#4a8cff,#1f46c8)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 0 1.5px #7fe8ff,0 0 16px rgba(79,216,255,.6)!important;text-shadow:0 1px 2px rgba(0,0,40,.5)}
 html body.hg.thA dialog.askdlg button.ab-no:focus,html body.hg.thA dialog.askdlg button.ab-ok:focus{outline:none}
 html body.hg.thA dialog.askdlg button.ab-no:focus-visible,html body.hg.thA dialog.askdlg button.ab-ok:focus-visible{outline:2px solid #fff;outline-offset:3px}
+/* ---------- v199 โหมดเบา (มือถือ / เอฟเฟกต์กลาง-ต่ำ): ไม่มีเบลอ ไม่มีภาพเลื่อน แสงเรืองเหลือแค่เส้นขอบ ---------- */
+body.pfLite #arCos .neb{filter:none;animation:none;inset:0}
+body.pfLite #arCos .band{filter:none;opacity:.3}
+body.pfLite #arCos .s1,body.pfLite #arCos .s3{animation:arTw1 5s ease-in-out infinite alternate}
+body.pfLite #arCos .s2{animation:arTw2 7s ease-in-out infinite alternate}
+body.pfLite #arCos .sh{display:none}
+body.pfLite #arCos .pl{box-shadow:0 -2px 0 rgba(127,240,255,.5)}
+body.pfLite dialog::backdrop{backdrop-filter:none}
+html body.hg.thA.pfLite #bin{box-shadow:inset 0 0 0 2px rgba(79,216,255,.7)!important}
+html body.hg.thA.pfLite #bin .zone:not(.rhDrop):not(.rhDropOn){box-shadow:inset 0 0 0 1.5px var(--c)!important}
+html body.hg.thA.pfLite .paper:not(.left),html body.hg.thA.pfLite .hoBox{box-shadow:inset 0 0 0 1.5px rgba(79,216,255,.85)!important}
+html body.hg.thA.pfLite .right .paper:has(.opp),html body.hg.thA.pfLite #hoZb .hoBox:first-child{box-shadow:inset 0 0 0 1.5px rgba(255,79,216,.85)!important}
+html body.hg.thA.pfLite:not(.cfr-gold):not(.cfr-silver):not(.cfr-holo):not(.cfr-neon) #me .zone .cf:not(.can):not(.tgt):not(.sel):not(.atkr){box-shadow:0 0 0 1.5px rgba(79,216,255,.9)!important}
+html body.hg.thA.pfLite:not(.cfr-gold):not(.cfr-silver):not(.cfr-holo):not(.cfr-neon) #opp .zone .cf:not(.can):not(.tgt):not(.sel):not(.atkr){box-shadow:0 0 0 1.5px rgba(255,79,216,.9)!important}
+html body.hg.thA.pfLite .right .devrow button,html body.hg.thA.pfLite .right .sysbtns button{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 1.5px #4fd8ff!important}
 
 </style>
 </head>
@@ -18222,6 +18237,29 @@ try{if(typeof MU!=='undefined'&&MU.mode){const m=MU.mode;MU.mode=null;musSet(m)}
   }
   try{arMk();arFx()}catch(e){}
   setInterval(()=>{try{arFx()}catch(e){}},2000);
+})();
+
+/* ===== v199 ลดกระตุกบนมือถือ: ค่าเริ่มต้นเอฟเฟกต์ "กลาง" บนมือถือ · โหมดเบา · ลดระดับอัตโนมัติเมื่อเฟรมตก ===== */
+(function(){
+  const mob=(()=>{try{return matchMedia('(pointer:coarse)').matches||/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)}catch(e){return false}})();
+  window.PF={mob,auto:{}};
+  try{if(mob&&localStorage.getItem('tc_fx')===null){hoS.fx='low'}}catch(e){}
+  const lite=()=>{try{document.body.classList.toggle('pfLite',mob||hoS.fx!=='std')}catch(e){}};
+  lite();
+  // วัดเฟรมระหว่างเล่น ถ้าตกต่อเนื่อง 2 ช่วง (10 วินาที) ลดเอฟเฟกต์ลง 1 ระดับ
+  let fr=[],last=0,bad=0;
+  function loop(t){if(last&&!document.hidden){const dt=t-last;if(dt<400)fr.push(dt)}last=t;requestAnimationFrame(loop)}
+  requestAnimationFrame(loop);
+  setInterval(()=>{try{
+    lite();
+    const inG=!!document.getElementById('sGame')?.classList.contains('on');
+    const n=fr.length;if(!inG||document.hidden||n<30){fr=[];bad=0;return}
+    fr.sort((a,b)=>a-b);const med=fr[n>>1],p90=fr[Math.floor(n*.9)];fr=[];
+    if(1000/med<38||p90>70)bad++;else bad=Math.max(0,bad-1);
+    if(bad>=2){bad=0;const cur=hoS.fx||'std',nx=cur==='std'?'low':cur==='low'?'off':null;
+      if(nx&&!PF.auto[nx]){PF.auto[nx]=1;hoSave('fx',nx);lite();
+        try{toast(`เครื่องเริ่มกระตุก — ลดเอฟเฟกต์เป็นระดับ "${nx==='low'?'กลาง':'ต่ำ'}" ให้อัตโนมัติ (ปรับคืนได้ที่ HOME › ตั้งค่า)`)}catch(e){}}}
+  }catch(e){}},5000);
 })();
 </script>
 </body>
