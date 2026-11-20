@@ -1805,6 +1805,14 @@ html body.hg.thA.pfLite:not(.cfr-gold):not(.cfr-silver):not(.cfr-holo):not(.cfr-
 html body.hg.thA.pfLite:not(.cfr-gold):not(.cfr-silver):not(.cfr-holo):not(.cfr-neon) #opp .zone .cf:not(.can):not(.tgt):not(.sel):not(.atkr){box-shadow:0 0 0 1.5px rgba(255,79,216,.9)!important}
 html body.hg.thA.pfLite .right .devrow button,html body.hg.thA.pfLite .right .sysbtns button{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 1.5px #4fd8ff!important}
 
+/* v202 ออนไลน์: แถบสถานะอ่านง่าย + ป้ายรออีกฝ่าย */
+#olBar{background:rgba(8,12,38,.94)!important;color:#fff!important;border:2px solid #5fe3ff!important;border-radius:14px!important;padding:5px 16px!important;font-size:15px!important;font-weight:700!important;letter-spacing:.02em;box-shadow:0 0 14px rgba(95,227,255,.45)!important;text-shadow:none!important;white-space:nowrap}
+#olWait{position:fixed;left:50%;transform:translateX(-50%);top:46px;z-index:9998;display:flex;align-items:center;gap:10px;background:rgba(40,22,4,.95);color:#ffe28a;border:2px solid #ffc84a;border-radius:999px;padding:7px 18px;font:800 16px/1.2 'Kanit','Noto Sans Thai',sans-serif;box-shadow:0 0 18px rgba(255,200,74,.5);pointer-events:none;white-space:nowrap}
+#olWait i{width:14px;height:14px;border-radius:50%;border:3px solid #ffc84a;border-top-color:transparent;animation:olSpin .9s linear infinite}
+@keyframes olSpin{to{transform:rotate(360deg)}}
+body.olMulWait #mulBtn{display:none!important}
+#olCode{text-transform:none;font-size:20px;text-align:center;letter-spacing:.3em}
+
 </style>
 </head>
 <body>
@@ -1848,7 +1856,7 @@ html body.hg.thA.pfLite .right .devrow button,html body.hg.thA.pfLite .right .sy
     <h5>ดวลกับเพื่อน (ออนไลน์)</h5><p class="hint">ต้องเปิดผ่านหน้า Artifact · ล็อกอินเพื่อจำเด็คของคุณได้ในอนาคต</p>
     <div class="fld"><label for="od">เด็คของคุณ</label><select id="od"></select></div>
     <div class="fld"><label>สร้างห้องใหม่</label><button class="red" id="olHost">สร้างห้อง</button></div>
-    <div class="fld"><label for="olCode">หรือใส่รหัสห้องของเพื่อน</label><div class="code"><input id="olCode" maxlength="6" style="text-transform:uppercase"><button id="olJoin">เข้าห้อง</button></div></div>
+    <div class="fld"><label for="olCode">หรือใส่รหัสห้องของเพื่อน</label><div class="code"><input id="olCode" maxlength="2" inputmode="numeric" pattern="[0-9]*" placeholder="เลข 2 ตัว" autocomplete="off"><button id="olJoin">เข้าห้อง</button></div></div>
     <div id="olStat" class="stt"></div>
   </div>
   <div class="paper setup setupR" id="setup">
@@ -15368,7 +15376,7 @@ async function hlHand(){
 // สถาปัตยกรรม: เครื่องที่ถึงเทิร์นเป็นผู้รัน engine (active) เครื่องอีกฝั่งเป็นผู้ดู (passive)
 // ส่ง snapshot ของสถานะเกม (กลับด้านฝั่งให้ตัวเองเป็นฝั่ง 0 เสมอ) ผ่าน room ของ Artifact
 // การตัดสินใจของฝ่ายตรงข้ามระหว่างเทิร์นเรา (React/เลือก) ส่งไปถามอีกเครื่อง (RPC)
-const OL={on:false,mode:'idle',role:null,code:'',room:null,tok:Math.random().toString(36).slice(2,8),peerTok:null,mid:0,out:new Map(),inb:new Map(),done:new Set(),askWait:new Map(),askSeq:0,askBusy:false,snapTimer:null,snapN:0,rxSnap:0,myDeck:null,theirDeck:null,started:false,unsub:[],peers:0};
+const OL={on:false,mode:'idle',role:null,code:'',room:null,tok:Math.random().toString(36).slice(2,8),peerTok:null,mid:0,out:new Map(),inb:new Map(),done:new Set(),askWait:new Map(),askSeq:0,askBusy:false,snapTimer:null,snapN:0,rxSnap:0,myDeck:null,theirDeck:null,started:false,unsub:[],peers:0,mulling:false,mulDone:false,hostDone:false,guestDone:false};
 const HQ=d=>!(window.VV&&VV.on)&&(d===0||(OL.on&&d===1));
 const olTxt=t=>typeof t==='string'?t.replace(/คอมพิวเตอร์/g,'คู่ต่อสู้').replace(/คอม/g,'คู่ต่อสู้'):t;
 async function cfm(d,msg,cards){return d===0?(await askYN(msg,cards)):(await olRemoteM('confirm',{msg:olTxt(msg),cards:(cards||[]).map(c=>c?olCardW(c):null)}))}
@@ -15486,21 +15494,30 @@ function olBar(){
   if(!OL.on){if(b)b.style.display='none';return}
   if(!b){b=document.createElement('div');b.id='olBar';document.body.appendChild(b)}
   b.style.display='';
-  b.textContent=`🌐 ออนไลน์ • ห้อง ${OL.code} • `+(G&&G.over?'จบเกม':OL.mode==='active'?'✅ ตาของคุณ':'⏳ รอคู่ต่อสู้');
+  b.textContent=`🌐 ออนไลน์ • ห้อง ${OL.code} • `+(G&&G.over?'จบเกม':OL.mulling?'เลือกเปลี่ยนการ์ด':OL.mode==='active'?'✅ ตาของคุณ':'⏳ ตาคู่ต่อสู้');
 }
-function olSetMode(m){OL.mode=m;OL.lastS=null;olBar();document.body.classList.toggle('olPassive',OL.on&&m==='passive')}
+function olWaitUpdate(){
+  let w=document.getElementById('olWait');
+  const on=OL.on&&G&&!G.over&&OL.peerTok&&(OL.mulDone||OL.askWait.size>0||(OL.mode==='passive'&&!OL.askBusy));
+  if(!on){if(w)w.style.display='none';return}
+  if(!w){w=document.createElement('div');w.id='olWait';document.body.appendChild(w)}
+  w.style.display='';
+  w.innerHTML='<i></i>'+(OL.mulDone?'กำลังรออีกฝ่ายเลือกเปลี่ยนการ์ด…':OL.mode==='passive'?'กำลังรออีกฝ่าย…':'กำลังรอการตอบจากอีกฝ่าย…');
+}
+function olSetMode(m){OL.mode=m;OL.lastS=null;olBar();olWaitUpdate();document.body.classList.toggle('olPassive',OL.on&&m==='passive')}
 function olSchedSnap(){
-  if(!OL.on||OL.mode!=='active'||!G||!OL.peerTok)return;
+  if(!OL.on||OL.mode!=='active'||!G||!OL.peerTok||OL.mulling)return;
   clearTimeout(OL.snapTimer);OL.snapTimer=setTimeout(olSnapNow,220);
 }
 function olSnapNow(){
-  if(!OL.on||OL.mode!=='active'||!G||!OL.peerTok)return;
+  if(!OL.on||OL.mode!=='active'||!G||!OL.peerTok||OL.mulling)return;
   const s=olSnapObj();if(s===OL.lastS)return;OL.lastS=s;
   olSend('snap',{n:++OL.snapN,s},{latest:true});
 }
 setInterval(()=>{try{olSnapNow()}catch(e){}},2500);
 async function olApply(s){
   const g=olDec(s);olSwap(g);G=g;
+  if(OL.mulDone||OL.mulling){OL.mulDone=false;OL.mulling=false;document.body.classList.remove('olMulWait')}
   try{UI.sel=null}catch(e){}
   (await render());
 }
@@ -15517,15 +15534,22 @@ function olOver(w,why){
   olSend('over',{s:olSnapObj(),w,why});
 }
 async function olAfterMul(){
-  // Mulligan ของเครื่องนี้เสร็จแล้ว
+  // Mulligan ของเครื่องนี้เสร็จแล้ว — สองฝั่งเลือกพร้อมกัน แล้วรออีกฝั่งให้เสร็จ
   G.mul=new Set();
-  OL.rxSnap=0;
-  if(OL.role==='host'){olSend('mul',{s:olSnapObj(),dice:OL.dice,first:OL.first});olSetMode('passive');msg('⏳ รอคู่ต่อสู้ Mulligan…');(await render())}
-  else{olSend('muldone',{s:olSnapObj()});olSetMode('passive');msg('⏳ รอโฮสต์เริ่มเกม…');(await render())}
+  OL.mulDone=true;document.body.classList.add('olMulWait');
+  if(OL.role==='host'){OL.hostDone=true;if(OL.guestDone)return (await olBegin());msg('⏳ กำลังรออีกฝ่ายเลือกเปลี่ยนการ์ด…');(await render())}
+  else{olSend('muldone',{s:olSnapObj()});olSetMode('passive');msg('⏳ กำลังรออีกฝ่ายเลือกเปลี่ยนการ์ด…');(await render())}
+}
+async function olBegin(){
+  // โฮสต์: ทั้งสองฝั่งเลือกการ์ดเสร็จ → เริ่มเกม
+  OL.mulling=false;OL.mulDone=false;OL.hostDone=false;OL.guestDone=false;document.body.classList.remove('olMulWait');
+  G.phase='main';
+  if(OL.first===1){(await olHandoff());return}
+  olSetMode('active');(await startTurn(0));
 }
 let olLogBuf=[],olLogT=null;
 function olLogLine(t){
-  if(!OL.on||OL.mode!=='active'||!OL.peerTok)return;
+  if(!OL.on||OL.mode!=='active'||!OL.peerTok||OL.mulling)return;
   olSchedSnap();
   olLogBuf.push(String(t).replace(/คุณ/g,'\u0001').replace(/คู่ต่อสู้/g,'คุณ').replace(/\u0001/g,'คู่ต่อสู้'));
   clearTimeout(olLogT);olLogT=setTimeout(()=>{const b=olLogBuf;olLogBuf=[];if(b.length)olSend('log',{t:b})},350);
@@ -15535,7 +15559,7 @@ function olLogLine(t){
 function olAsk(kind,p){
   return new Promise(res=>{
     if(!OL.on||!OL.peerTok)return res(null);
-    const id=++OL.askSeq;OL.askWait.set(id,res);
+    const id=++OL.askSeq;OL.askWait.set(id,res);olWaitUpdate();
     clearTimeout(OL.snapTimer);
     olSend('ask',{id,kind,p,s:olSnapObj()});
   });
@@ -15564,16 +15588,18 @@ async function olHandle(ty,o,from){
     return;
   }
   if(ty==='welcome'){if(OL.role==='guest'){OL.peerTok=from;OL.peerPf=hoCleanPf(o.pf);olNote('✅ เข้าห้องแล้ว รอโฮสต์เริ่มเกม…')}return}
+  if(ty==='mul'&&OL.role==='guest'&&!OL.peerTok)OL.peerTok=from;
   if(!OL.peerTok||from!==OL.peerTok)return;
-  if(ty==='mul'){  // guest: รับเกมจากโฮสต์ (โฮสต์ทำ mulligan แล้ว) แล้วทำ mulligan ของตัวเอง
-    OL.on=true;(await olApply(o.s));G.phase='mulligan';G.mul=new Set();show('#sGame');olSetMode('active');(await render());
+  if(ty==='mul'){  // guest: รับเกมจากโฮสต์ แล้วเลือกเปลี่ยนการ์ดพร้อมกับโฮสต์
+    OL.on=true;OL.mulling=true;OL.mulDone=false;olPreDeal();(await olApply(o.s));OL.mulling=true;G.phase='mulligan';G.mul=new Set();show('#sGame');olSetMode('active');(await render());
     if(o.dice){try{const lr=o.dice[o.dice.length-1];log(`🎲 ทอยเต๋า: คุณได้ ${lr[1]} · คู่ต่อสู้ได้ ${lr[0]} → ${o.first===1?'คุณ':'คู่ต่อสู้'}เริ่มก่อน`);uiFirstDiceM(o.dice.map(r=>[r[1],r[0]]),'คุณ','คู่ต่อสู้')}catch(e){}}
     return;
   }
-  if(ty==='muldone'){ // host: guest ทำ mulligan เสร็จ เริ่มเทิร์นแรก
-    (await olApply(o.s));
-    if(OL.first===1){G.phase='main';(await olHandoff());return}  // แขกชนะการทอยเต๋า → ส่งเทิร์นแรกให้แขก
-    olSetMode('active');G.phase='main';(await startTurn(0));return;
+  if(ty==='muldone'){ // host: guest เลือกเปลี่ยนการ์ดเสร็จ → เอามือ/เด็คของแขกมาใช้
+    try{const g=olDec(o.s);olSwap(g);const gp=g.p[1];if(gp&&G&&G.p[1]){gp.name='คู่ต่อสู้';G.p[1]=gp}}catch(e){try{console.error(e)}catch(_){}}
+    OL.guestDone=true;
+    if(OL.hostDone)(await olBegin());else (await render());
+    return;
   }
   if(ty==='snap'){if(OL.mode==='passive'&&!OL.askBusy&&o.n>OL.rxSnap){OL.rxSnap=o.n;(await olApply(o.s))}return}
   if(ty==='handoff'){(await olApply(o.s));OL.rxSnap=0;olSetMode('active');G.pending=null;(await startTurn(0));return}
@@ -15581,36 +15607,44 @@ async function olHandle(ty,o,from){
   if(ty==='over'){(await olApply(o.s));G.over=true;msg(o.w===0?'😵 คุณแพ้…':'🎉 คุณชนะ!');(await render());olBar();try{endFx(o.w!==0,o.why)}catch(x){}return}
   if(ty==='fx'){olPlayFx(o);return}
   if(ty==='ask'){(await olOnAsk(o));return}
-  if(ty==='ans'){const f=OL.askWait.get(o.id);if(f){OL.askWait.delete(o.id);f(o.v)}return}
+  if(ty==='ans'){const f=OL.askWait.get(o.id);if(f){OL.askWait.delete(o.id);f(o.v)}olWaitUpdate();return}
   if(ty==='bye'){olNote('คู่ต่อสู้ออกจากเกมแล้ว');for(const [k,f] of [...OL.askWait]){OL.askWait.delete(k);f(null)}return}
 }
 
 // ---------- ห้อง / เริ่มเกม ----------
 function olRoomName(code){return 'tl-'+code.toLowerCase()}
-function olConnect(code){
-  OL.code=code;
-  if(!window.claude||!window.claude.use){olNote('❌ ฟีเจอร์ออนไลน์ใช้ได้เฉพาะเมื่อเปิดผ่านหน้า Artifact ที่ล็อกอินแล้ว');return Promise.resolve(false)}
+function olConnect(code,quiet){
+  OL.code=code;OL.err='';
+  const note=t=>{OL.err=t;if(!quiet)olNote(t)};
+  if(!window.claude||!window.claude.use){note('❌ ฟีเจอร์ออนไลน์ใช้ได้เฉพาะเมื่อเปิดผ่านหน้า Artifact ที่ล็อกอินแล้ว');return Promise.resolve(false)}
   return window.claude.use('room').then(room=>{
-    if(!room){olNote('❌ เชื่อมห้องไม่ได้ (ต้องล็อกอิน และเจ้าของต้องแชร์สิทธิ์ให้)');return false}
+    if(!room){note('❌ เชื่อมห้องไม่ได้ (ต้องล็อกอิน และเจ้าของต้องแชร์สิทธิ์ให้)');return false}
     return room.join(olRoomName(code)).then(r=>{
       OL.room=r;OL.unsub.push(r.on('g',olOnMsg));
       OL.unsub.push(r.onPeers(ch=>{OL.peers=ch.peers.filter(p=>!p.isMe).length;if(ch.left&&ch.left.length&&OL.on&&OL.started)olNote('⚠ คู่ต่อสู้หลุดจากห้อง (ถ้ากลับเข้ามาเกมจะซิงก์ต่อเอง)');if(ch.joined&&ch.joined.some(p=>!p.isMe)&&OL.on){OL.lastS=null;setTimeout(olSnapNow,800)}}));
       return true;
     });
-  }).catch(e=>{olNote('❌ เข้าห้องไม่ได้: '+((e&&e.message)||e));return false});
+  }).catch(e=>{note('❌ เข้าห้องไม่ได้: '+((e&&e.message)||e));return false});
 }
 function olDeckSpec(v){
   if(v.startsWith('U:')){const d=getDecks().find(x=>x.id===v.slice(2));if(d)return 'J:'+JSON.stringify({name:d.name,main:d.main,life:d.life})}
   return v;
 }
-function olHost(){
+async function olHost(){
   OL.role='host';OL.myDeck=$('#od').value;
-  const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let code='';for(let i=0;i<5;i++)code+=ch[Math.floor(Math.random()*ch.length)];
   olNote('กำลังสร้างห้อง…');
-  olConnect(code).then(ok=>{if(ok)olNote(`✅ สร้างห้องแล้ว รหัส: ${code}\nให้เพื่อนกด "เข้าห้อง" แล้วใส่รหัสนี้ (เปิดหน้า Artifact เดียวกัน)`)});
+  let tries=0,err='';
+  const go=()=>{
+    const code=String(Math.floor(Math.random()*100)).padStart(2,'0');
+    olConnect(code,true).then(async ok=>{
+      if(ok)return olNote(`✅ สร้างห้องแล้ว รหัส: ${code}\nให้เพื่อนกด "เข้าห้อง" แล้วใส่เลข 2 ตัวนี้`);
+      err=OL.err||err;if(++tries<6&&/ถูกใช้อยู่แล้ว/.test(err))return (await go());
+      olNote(err||'❌ สร้างห้องไม่ได้');
+    });
+  };(await go());
 }
 function olJoin(){
-  const code=($('#olCode').value||'').trim().toUpperCase();if(code.length<3)return olNote('ใส่รหัสห้องก่อน');
+  const code=($('#olCode').value||'').replace(/\D/g,'').slice(0,2);if(code.length!==2)return olNote('ใส่รหัสห้อง (เลข 2 ตัว) ก่อน');
   OL.role='guest';OL.myDeck=$('#od').value;
   olNote('กำลังเข้าห้อง…');
   olConnect(code).then(ok=>{if(ok){olSend('join',{deck:olDeckSpec(OL.myDeck),pf:hoProfile()});olNote('ส่งคำขอเข้าห้องแล้ว รอโฮสต์…')}});
@@ -15626,13 +15660,16 @@ async function olStartHost(){
   // โฮสต์ทอยเต๋า (ซ้าย=โฮสต์ ขวา=แขก) แล้วส่งผลให้แขกพร้อมข้อความ 'mul' — OL.first: 0=โฮสต์เริ่ม 1=แขกเริ่ม
   const fr=firstRoll();OL.first=fr.first;OL.dice=fr.rounds;const lr=fr.rounds[fr.rounds.length-1];
   log(`🎲 ทอยเต๋า: คุณได้ ${lr[0]} · คู่ต่อสู้ได้ ${lr[1]} → ${fr.first===0?'คุณ':'คู่ต่อสู้'}เริ่มก่อน`);
-  show('#sGame');olSetMode('active');(await render());
+  OL.mulling=true;OL.mulDone=false;OL.hostDone=false;OL.guestDone=false;
+  olPreDeal();show('#sGame');olSetMode('active');(await render());
+  olSend('mul',{s:olSnapObj(),dice:OL.dice,first:OL.first});
   try{uiFirstDiceM(fr.rounds,'คุณ','คู่ต่อสู้')}catch(e){}
 }
+function olPreDeal(){try{if(typeof rqMid==='function'&&rqMid()&&!rhVV()){document.body.classList.add('rhPreDeal');clearTimeout(window._rhPD);window._rhPD=setTimeout(()=>document.body.classList.remove('rhPreDeal'),15000)}}catch(e){}}
 function olLeave(){
   try{if(OL.on&&OL.peerTok)olSend('bye',{})}catch(e){}
   setTimeout(()=>{OL.unsub.forEach(f=>{try{f()}catch(e){}});OL.unsub=[];try{OL.room&&OL.room.leave()}catch(e){}OL.room=null},400);
-  OL.on=false;OL.mode='idle';OL.started=false;OL.peerTok=null;OL.out.forEach(r=>clearTimeout(r.t));OL.out.clear();OL.inb.clear();OL.done.clear();OL.askWait.clear();
+  OL.on=false;OL.mode='idle';OL.started=false;OL.mulling=false;OL.mulDone=false;OL.hostDone=false;OL.guestDone=false;document.body.classList.remove('olMulWait');OL.peerTok=null;OL.out.forEach(r=>clearTimeout(r.t));OL.out.clear();OL.inb.clear();OL.done.clear();OL.askWait.clear();
   document.body.classList.remove('olPassive');olBar();
 }
 
@@ -15661,14 +15698,14 @@ function olPlayFx(f,n){
 // ---------- hooks ----------
 {const _fa=fxAttack;fxAttack=function(o,a,t){_fa(o,a,t);olFx('atk',o,a,t)}}
 {const _fg=fxGrave;fxGrave=function(o,a){_fg(o,a);olFx('grave',o,a)}}
-{const _r=render;render=async function(){(await _r());if(OL.on)olBar();if(OL.on&&OL.mode==='active')olSchedSnap()}}
+{const _r=render;render=async function(){(await _r());if(OL.on)olBar();olWaitUpdate();if(OL.on&&OL.mode==='active')olSchedSnap()}}
 {const _l=log;log=function(t){_l(t);olLogLine(t)}}
 document.addEventListener('click',e=>{
-  if(!OL.on||OL.mode!=='passive'||OL.askBusy)return;
+  if(!OL.on||!((OL.mode==='passive'&&!OL.askBusy)||OL.mulDone||(OL.mode==='active'&&OL.askWait.size>0&&!OL.askBusy)))return;
   if(!e.target.closest('#sGame'))return;
   if(e.target.closest('#exitBtn,[data-hell],[data-deckv],[data-dim],#gy,#cardPop,#log,.toastWrap'))return;
   e.stopImmediatePropagation();e.preventDefault();
-  try{toast('⏳ รอคู่ต่อสู้เล่นอยู่')}catch(_){}
+  try{toast(OL.mode==='active'?'⏳ รออีกฝ่ายตอบก่อนจึงจะทำต่อได้':'⏳ รอคู่ต่อสู้เล่นอยู่')}catch(_){}
 },true);
 $('#pickOL').onclick=()=>{$('#olSetup').classList.add('on');try{fillDeckSelects()}catch(e){}};
 $('#olHost').onclick=olHost;
