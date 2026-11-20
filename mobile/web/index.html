@@ -13677,18 +13677,21 @@ async function handActReady(c){
   if(f.policeHand&&(await bt07PoliceOK(0,c)))return true;
   return false;
 }
-function clashSide(o,a,lab){
-  let P;try{P=powerParts(o,a)}catch(e){P={tot:power(o,a),parts:[['พื้นฐาน',power(o,a),1]]}}
+function clashSide(o,a,lab,isAtk){
+  let P;const _s=a.atk;if(isAtk)a.atk=true;
+  try{try{P=powerParts(o,a)}catch(e){P={tot:power(o,a),parts:[['พื้นฐาน',power(o,a),1]]}}}finally{a.atk=_s}
+  if(isAtk&&a.c.fx&&a.c.fx.atk)P.parts.push(['ตอนโจมตี',a.c.fx.atk]);
+  if(UI_fb(a))P.parts.push(['ตอนต่อสู้',UI_fb(a)])
   const chips=P.parts.filter(p=>p[1]!==0||p[2]).map(p=>`<div class="clPart${p[2]?' base':''}"><span>${esc(p[0])}</span><b>${p[2]?p[1]:(p[1]>0?'+':'−')+Math.abs(p[1])}</b></div>`).join('');
   return `<div class="clc ${o===0?'me':'op'}" data-t="${esc(a.c.name+'\n'+(a.c.text||''))}"><div class="cll">${lab}</div>${face(a.c,110)}<div class="clNm">${esc(a.c.name)}</div><div class="clchs">${chips}</div></div>`;
 }
 function askClash(at,tg,yes){
-  let _ap=0,_dp=0;try{_ap=UI_atkPwN(0,at);_dp=powerParts(1,tg).tot}catch(e){_ap=power(0,at);_dp=power(1,tg)}
+  let _ap=0,_dp=0;try{_ap=UI_atkPwN(0,at);_dp=powerParts(1,tg).tot+UI_fb(tg)}catch(e){_ap=power(0,at);_dp=power(1,tg)}
   let hl=[];try{hl=attackHelpers(0,at)}catch(e){}
   const bon=h=>{try{return hasUnity(0,h)?power(0,h):1}catch(e){return 0}};
   const hh=hl.length?`<div class="clHelp"><div class="clHt">สามัคคี / แทงหลัง — แตะการ์ดที่จะลงนอนเพื่อเพิ่ม POWER</div><div class="clHl">${hl.map((h,k)=>`<button type="button" class="clH" data-hk="${k}">${face(h.c,64)}<span>${hasUnity(0,h)?'สามัคคี':'แทงหลัง'} +${bon(h)}</span></button>`).join('')}</div></div>`:'';
   const vd=(a,d)=>`<div class="vd ${a>d?'win':a<d?'lose':'tie'}">${a>d?'ฝ่ายคุณชนะ':a<d?'ฝ่ายป้องกันชนะ':'POWER เท่ากัน'}</div>`;
-  const html=`<div class="clHead">ประกาศโจมตี</div><div class="cl2tt">โจมตี <b>${esc(tg.c.name)}</b> ใช่ไหม?</div><div class="cl2">${clashSide(0,at,'ผู้โจมตี')}<div class="clv">VS</div>${clashSide(1,tg,'ผู้ป้องกัน')}</div>${hh}<div class="clTot"><div class="n me"><small>รวม</small><b id="clApT">${_ap}</b></div><div class="ar">→</div><div class="n op"><small>รวม</small><b>${_dp}</b></div><span id="clVd">${vd(_ap,_dp)}</span></div>`;
+  const html=`<div class="clHead">ประกาศโจมตี</div><div class="cl2tt">โจมตี <b>${esc(tg.c.name)}</b> ใช่ไหม?</div><div class="cl2">${clashSide(0,at,'ผู้โจมตี',1)}<div class="clv">VS</div>${clashSide(1,tg,'ผู้ป้องกัน')}</div>${hh}<div class="clTot"><div class="n me"><small>รวม</small><b id="clApT">${_ap}</b></div><div class="ar">→</div><div class="n op"><small>รวม</small><b>${_dp}</b></div><span id="clVd">${vd(_ap,_dp)}</span></div>`;
   const sel=new Set();UI.clashSel=null;
   askOK(null,html,async ()=>{UI.clashSel=hl.filter((h,k)=>sel.has(k));return (await yes())});try{$('#okDlg').classList.add('clashOk')}catch(e){}
   document.querySelectorAll('#okTxt .clH').forEach(b=>b.addEventListener('click',()=>{const k=+b.dataset.hk;if(sel.has(k))sel.delete(k);else sel.add(k);b.classList.toggle('on',sel.has(k));
@@ -15207,7 +15210,8 @@ function flyRun(sn){
   };
 }
 
-function UI_atkPwN(o,a){const s=a.atk;a.atk=true;try{return power(o,a)}finally{a.atk=s}}
+const UI_fb=a=>{const f=a.c.fx||{};return(f.fightPow||0)+(f.fightPowAny||0)};
+function UI_atkPwN(o,a){const s=a.atk;a.atk=true;try{return power(o,a)+((a.c.fx&&a.c.fx.atk)||0)+UI_fb(a)}finally{a.atk=s}}
 function UI_atkPw(o,a){if(o===0&&G.pending&&G.pending.kind==='atk'&&G.pending.av===a){const v=UI_atkPwN(o,a),b=power(o,a);return v+(v!==b?'↑':'')}return power(o,a)}
 
 /* ===== เอฟเฟกต์เสริม (v107): แบนเนอร์เทิร์น/เฟส · ภาพตอนใช้ Magic · ลูกศรโจมตี · แสงโดนตี · วงแสงอัญเชิญ ===== */
