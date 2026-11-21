@@ -1812,6 +1812,82 @@ html body.hg.thA.pfLite .right .devrow button,html body.hg.thA.pfLite .right .sy
 @keyframes olSpin{to{transform:rotate(360deg)}}
 body.olMulWait #mulBtn{display:none!important}
 #olCode{text-transform:none;font-size:20px;text-align:center;letter-spacing:.3em}
+/* ===== v203 Arena UI: เมนู/แผง/กล่องข้อความทุกหน้า (เฉพาะธีม Arena) ===== */
+body.thAm{--a-sky:#3a6cff;--a-cy:#4fd8ff;--a-pk:#ff4fd8;--a-gold:#ffc93c;--a-ink:#f2f7ff;--a-soft:#b8c8ff;--a-panel:#122882;--a-deep:#081246}
+/* พื้นหลังหน้าเมนู (ยกเว้นหน้าแรกที่คงของเดิม) */
+body.thAm #sMode,body.thAm #sDeck,body.thAm #sRules,body.thAm #sTut,body.thAm #sLogin{
+  background:radial-gradient(70% 40% at 50% 100%,rgba(79,216,255,.35),transparent 70%),linear-gradient(180deg,#2a52d8 0%,#3a62e8 20%,#22308f 50%,#0a1250 100%)!important}
+body.thAm #sMode::before,body.thAm #sDeck::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,10,40,.12),rgba(4,10,40,.5));pointer-events:none}
+body.thAm #sMode>*,body.thAm #sDeck>*{position:relative}
+/* หัวหน้า */
+body.thAm .hmTop h2,body.thAm #sDeck h2,body.thAm #sDeck .hd h2{font:800 italic 34px/1.1 Kanit,'Noto Sans Thai',sans-serif!important;letter-spacing:0!important;color:#f2f7ff;text-shadow:0 0 14px #2a7bff,0 2px 0 rgba(0,0,40,.5)}
+body.thAm .hmTop button,body.thAm #sDeck .hd button:first-child{font:800 italic 16px/1 Kanit,sans-serif;color:#f2f7ff;border:0;border-radius:12px;background:linear-gradient(180deg,#2a5ad8,#12298a);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 1.5px #4fd8ff,0 0 12px rgba(79,216,255,.55)}
+/* ปุ่มเมนู (รายการโหมด) */
+body.thAm .mbars .nv,body.thAm .nv:not(.pri){font-family:Kanit,sans-serif;color:#f2f7ff;border:0!important;border-radius:8px;
+  background:linear-gradient(180deg,rgba(18,40,130,.92),rgba(8,18,70,.95))!important;box-shadow:inset 0 0 0 1.5px rgba(79,216,255,.85),inset 0 0 22px rgba(79,216,255,.18),0 0 18px rgba(42,123,255,.45)!important}
+body.thAm .mbars .nv{font-weight:800;font-style:italic}
+body.thAm .mbars .nv small{font:700 11px/1 'Chakra Petch',Kanit,sans-serif!important;font-style:normal;letter-spacing:.16em;color:#b8c8ff}
+body.thAm .mbars .nv.sel,body.thAm .mbars .nv.on{background:linear-gradient(90deg,#6a4a10,#2a2a7a)!important;box-shadow:inset 0 0 0 2px #ffc93c,0 0 22px rgba(255,201,60,.6)!important}
+body.thAm .mbars .nv.off{filter:saturate(.35) brightness(.72)}
+body.thAm .tagoff{font:700 italic 12px/1.5 Kanit;color:#f2f7ff;background:linear-gradient(90deg,#2a5ad8,#7a2ad8);box-shadow:0 0 0 1px #4fd8ff;border-radius:4px;padding:1px 10px}
+/* ปุ่มหลักสีทอง */
+body.thAm .nv.pri,body.thAm button.red,body.thAm .nv.sel2b,body.thAm #mvGo{font:800 italic 20px/1 Kanit,sans-serif!important;color:#3a1c00!important;border:0!important;border-radius:12px;
+  background:linear-gradient(180deg,#fff4b8,#ffc93c 45%,#e89a1a)!important;box-shadow:inset 0 2px 0 rgba(255,255,255,.7),inset 0 -3px 0 rgba(160,80,0,.45),0 0 0 2px #fff0b0,0 0 18px rgba(255,201,60,.7)!important;text-shadow:none!important}
+/* แผง */
+body.thAm .paper,body.thAm .hmPanel,body.thAm #sDeck .right,body.thAm #sDeck .left{border:0!important;border-radius:8px;
+  background:linear-gradient(180deg,rgba(18,40,130,.9),rgba(8,18,70,.94))!important;box-shadow:inset 0 0 0 1.5px rgba(79,216,255,.85),inset 0 0 22px rgba(79,216,255,.16),0 0 18px rgba(42,123,255,.4),0 10px 30px rgba(0,0,20,.5)!important}
+body.thAm .paper h3,body.thAm .paper h5,body.thAm #mvT{font:800 italic 26px/1.15 Kanit,sans-serif!important;color:#f2f7ff;letter-spacing:0}
+body.thAm .paper p,body.thAm .hint,body.thAm #mvD{font:500 15px/1.5 Kanit,sans-serif;color:#b8c8ff}
+body.thAm .mvTag{font:700 11px/1 'Chakra Petch',sans-serif;letter-spacing:.2em;color:#7ff0ff}
+/* ช่องกรอก / เลือก */
+body.thAm input[type=text],body.thAm input:not([type]),body.thAm select,body.thAm textarea{font-family:Kanit,sans-serif;color:#f2f7ff;border:0!important;border-radius:8px;
+  background:linear-gradient(180deg,#0a1650,#081246)!important;box-shadow:inset 0 0 0 1.5px rgba(79,216,255,.55)!important}
+body.thAm input:focus,body.thAm select:focus{box-shadow:inset 0 0 0 2px #4fd8ff,0 0 12px rgba(79,216,255,.6)!important;outline:0}
+body.thAm .fld label{font:700 12px/1 'Chakra Petch',Kanit,sans-serif;letter-spacing:.14em;color:#7ff0ff}
+/* รหัสห้องเลข 2 ตัว */
+body.thAm #olCode{width:150px!important;height:76px;font:800 54px/1 'Chakra Petch',sans-serif!important;text-align:center;letter-spacing:.18em;color:#3a1c00!important;
+  background:linear-gradient(180deg,#fff0b0,#ffc93c 50%,#e89a1a)!important;border-radius:14px;box-shadow:inset 0 -5px 0 rgba(120,56,0,.35),0 0 22px rgba(255,201,60,.6)!important}
+body.thAm #olCode::placeholder{font:700 16px Kanit,sans-serif;letter-spacing:0;color:rgba(58,28,0,.55)}
+body.thAm #olStat{font:600 15px/1.5 Kanit,sans-serif;color:#ffe9a0;white-space:pre-line}
+/* กล่องข้อความทั้งหมด */
+body.thAm dialog{border:0!important;border-radius:12px;color:#f2f7ff;font-family:Kanit,sans-serif;
+  background:linear-gradient(180deg,#122882,#081246)!important;box-shadow:inset 0 0 0 1.5px rgba(79,216,255,.85),inset 0 0 22px rgba(79,216,255,.18),0 0 24px rgba(42,123,255,.6),0 30px 60px rgba(0,0,30,.6)!important}
+body.thAm dialog::backdrop{background:rgba(4,10,40,.72)}
+body.thAm dialog h3,body.thAm dialog h4{font:800 italic 30px/1.15 Kanit,sans-serif;text-align:center;background:linear-gradient(180deg,#fff7d0,#ffc93c 50%,#e89a1a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #6a3a00)}
+body.thAm dialog button{font:800 italic 16px/1 Kanit,sans-serif;color:#f2f7ff;border:0;border-radius:12px;padding:12px 24px;cursor:pointer;background:linear-gradient(180deg,#2a5ad8,#12298a);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 1.5px #4fd8ff,0 0 12px rgba(79,216,255,.55)}
+body.thAm dialog button.pri,body.thAm dialog button.ok,body.thAm dialog button.yes,body.thAm dialog #chooseOk{color:#3a1c00;background:linear-gradient(180deg,#fff4b8,#ffc93c 45%,#e89a1a);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),inset 0 -3px 0 rgba(160,80,0,.45),0 0 0 2px #fff0b0,0 0 18px rgba(255,201,60,.7)}
+/* toast */
+body.thAm #toast,body.thAm .toast{font:600 15px/1.3 Kanit,sans-serif;color:#f2f7ff;border:0;border-radius:6px;background:linear-gradient(90deg,#0a1a5a,#0a1a5ae6 70%,#0a1a5a99);box-shadow:inset 3px 0 0 #4fd8ff,0 0 0 1px rgba(79,216,255,.25),0 8px 20px rgba(0,0,30,.5)}
+
+/* ---- v204 กล่องเลือกการ์ด ---- */
+body.thAm #chooseDlg{width:min(1060px,94vw);max-width:94vw;padding:40px 40px 26px;overflow:visible}
+body.thAm #chooseDlg::before{content:"SELECT";position:absolute;left:50%;top:-12px;translate:-50% 0;padding:2px 22px;font:700 11px/16px 'Chakra Petch',sans-serif;letter-spacing:.2em;color:#f2f7ff;background:linear-gradient(90deg,transparent,#2a5ad8 20%,#7a2ad8 80%,transparent)}
+body.thAm #chooseTitle{display:block;margin:0 0 6px;text-align:center;font:800 italic 34px/1.15 Kanit,sans-serif;background:linear-gradient(180deg,#fff7d0,#ffc93c 50%,#e89a1a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #6a3a00)}
+body.thAm #chooseList{display:flex;flex-wrap:wrap;justify-content:center;gap:26px 30px;margin:20px 0 20px!important;max-height:56vh;overflow:auto;padding:36px 8px 6px}
+body.thAm #chooseList>div{position:relative}
+body.thAm #chooseList>div>div:last-child{margin-top:8px;font:700 15px/1.2 Kanit,sans-serif!important;color:#dfe8ff}
+body.thAm #chooseList .cf.sel{transform:translateY(-10px);box-shadow:0 0 0 3px #ffc93c,0 0 24px #ffc93c!important}
+body.thAm #chooseList .cf.sel::after{content:"\2713";position:absolute;left:50%;top:-14px;translate:-50% 0;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:900 18px/1 Kanit;color:#3a1c00;background:#ffc93c;box-shadow:0 0 14px #ffc93c;z-index:5}
+body.thAm #chooseOk{display:block;margin:0 auto;min-width:200px;font-size:20px;padding:14px 36px}
+/* ---- เปลี่ยนการ์ดตอนเลือกเก็บมือ ---- */
+body.thAm #hand .cf.mul{opacity:1;filter:brightness(.55) saturate(.8);transform:translateY(22px);box-shadow:0 0 0 3px #ff4d6a,0 0 20px rgba(255,77,106,.85)!important}
+body.thAm #hand .cf.mul::after{content:"เปลี่ยน";position:absolute;left:50%;top:42%;translate:-50% -50%;padding:3px 12px;font:800 italic 15px/1.3 Kanit,sans-serif;color:#f2f7ff;background:#ff4d6a;border-radius:4px;box-shadow:0 0 12px rgba(255,77,106,.8);z-index:6;white-space:nowrap}
+/* ---- ห้องออนไลน์ สองฝั่ง ---- */
+body.thAm #olSetup{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;align-content:start}
+body.thAm #olSetup>h5,body.thAm #olSetup>.hint,body.thAm #olSetup>.fld:nth-of-type(1),body.thAm #olSetup>#olStat{grid-column:1/-1}
+body.thAm #olSetup>.fld:nth-of-type(2),body.thAm #olSetup>.fld:nth-of-type(3){padding:18px 18px 20px;border-radius:12px;background:rgba(6,14,64,.55);box-shadow:inset 0 0 0 1.5px rgba(79,216,255,.5);display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center}
+body.thAm #olSetup>.fld:nth-of-type(2) label::before,body.thAm #olSetup>.fld:nth-of-type(3) label::before{display:inline-grid;place-items:center;width:26px;height:26px;margin-right:8px;border-radius:50%;font:800 14px/1 'Chakra Petch';color:#3a1c00;background:#ffc93c}
+body.thAm #olSetup>.fld:nth-of-type(2) label::before{content:"1"}
+body.thAm #olSetup>.fld:nth-of-type(3) label::before{content:"2"}
+body.thAm #olSetup>.fld:nth-of-type(2) label,body.thAm #olSetup>.fld:nth-of-type(3) label{font:800 italic 18px/1.2 Kanit,sans-serif;letter-spacing:0;color:#f2f7ff}
+body.thAm #olSetup .code{display:flex;flex-direction:column;align-items:center;gap:12px}
+body.thAm #olStat{min-height:20px}
+body.thAm #olStat .olDg{display:flex;gap:14px;justify-content:center;margin:6px 0 12px}
+body.thAm #olStat .olDg b{display:grid;place-items:center;width:60px;height:80px;border-radius:12px;font:800 52px/1 'Chakra Petch',sans-serif;color:#3a1c00;background:linear-gradient(180deg,#fff0b0,#ffc93c 50%,#e89a1a);box-shadow:inset 0 -5px 0 rgba(120,56,0,.35),0 0 24px rgba(255,201,60,.6)}
+body.thAm #olStat .olTx{text-align:center;font:500 15px/1.5 Kanit,sans-serif;color:#b8c8ff;margin-bottom:10px}
+body.thAm #olStat .olWt{display:flex;justify-content:center;align-items:center;gap:12px;width:max-content;margin:0 auto;padding:8px 22px;border-radius:999px;font:800 16px/1.2 Kanit,sans-serif;color:#ffe28a;background:rgba(40,22,4,.95);border:2px solid #ffc84a;box-shadow:0 0 18px rgba(255,200,74,.5)}
+body.thAm #olStat .olWt i{width:15px;height:15px;border-radius:50%;border:3px solid #ffc84a;border-top-color:transparent;animation:olSpin .9s linear infinite}
+@keyframes olSpin{to{transform:rotate(360deg)}}
 
 </style>
 </head>
@@ -15458,7 +15534,10 @@ function olUnpack(s){
   return new Response(ds.readable).arrayBuffer().then(b=>new TextDecoder().decode(b));
 }
 function olEmit(o){try{if(OL.room)OL.room.emit('g',o).catch(()=>{})}catch(e){}}
-function olNote(t){try{const el=$('#olStat');if(el)el.textContent=t}catch(e){}try{toast(t)}catch(e){}}
+function olNote(t){try{const el=$('#olStat');if(el){const m=/รหัส:\s*(\d\d)/.exec(t);
+  if(m){const esc2=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    el.innerHTML='<div class="olDg"><b>'+m[1][0]+'</b><b>'+m[1][1]+'</b></div><div class="olTx">'+esc2(t.replace(/^.*?รหัส:\s*\d\d\s*/,'').replace(/^✅[^\n]*\n?/,'')||'บอกเลข 2 ตัวนี้ให้เพื่อน')+'</div><div class="olWt"><i></i>กำลังรอเพื่อนเข้าห้อง…</div>'}
+  else el.textContent=t}}catch(e){}try{toast(t)}catch(e){}}
 function olSend(ty,obj,opt){
   return olPack(JSON.stringify(obj)).then(s=>{
     const m=OL.tok+'.'+(++OL.mid),N=2800,parts=[];
@@ -15738,7 +15817,7 @@ function hoApply(id){
   const inG=id?id==='#sGame':(g&&g.classList.contains('on'));
   b.classList.toggle('bt-note',!!inG&&hoS.theme==='note');
   b.classList.toggle('hg',!!inG&&hoS.theme!=='note');
-  b.classList.toggle('thA',!!inG&&hoS.theme==='arena');
+  b.classList.toggle('thA',!!inG&&hoS.theme==='arena');b.classList.toggle('thAm',hoS.theme==='arena');
   b.classList.toggle('tilt',hoS.tilt==='1');
   b.classList.toggle('noDev',hoS.dev==='0');
   b.classList.toggle('mat-grid',!!inG&&hoS.mat==='grid');
